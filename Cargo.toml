@@ -1,0 +1,16 @@
+[package]
+name = "wp-epub-cli"
+version = "0.1.0"
+edition = "2024"
+description = "A CLI tool to download Wattpad Storeis into epubs."
+authors = ["Longwag <contact@longwang.dev>"]
+
+[dependencies]
+anyhow = "1.0.99"
+clap = { version = "4.5.46", features = ["derive", "debug"] }
+thiserror = "2.0.16"
+tokio = { version = "1.47.1", features = ["full"] }
+tracing = { version = "0.1.41", features = ["async-await"] }
+tracing-subscriber = { version = "0.3.19", features = ["fmt"] }
+reqwest = "0.12.23"
+wp-mini-epub = "0.1.0-alpha.1"
