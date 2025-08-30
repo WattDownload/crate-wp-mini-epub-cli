@@ -89,15 +89,23 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install cross-compilation toolchains
+    - name: Configure APT for cross-compilation
       run: |
-        # Add arm64 architecture and enable the universe repository
+        # Make the system aware of the arm64 architecture
         sudo dpkg --add-architecture arm64
-        sudo add-apt-repository -y universe
-        # Update package lists to include new sources
+        
+        # Overwrite the sources.list to use the main archive for all components.
+        # This avoids 404 errors from mirrors that don't host foreign architectures.
+        echo "deb [arch=amd64,arm64] http://azure.archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse" | sudo tee /etc/apt/sources.list
+        echo "deb [arch=amd64,arm64] http://azure.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+        echo "deb [arch=amd64,arm64] http://azure.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+        echo "deb [arch=amd64,arm64] http://azure.archive.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+        
+        # Update package lists from the new, reliable source
         sudo apt-get update
+        
         # Install the required packages
-        sudo apt-get install -y gcc-multilib gcc-aarch64-linux-gnu libc6-dev-arm64-cross
+        sudo apt-get install -y --no-install-recommends gcc-multilib gcc-aarch64-linux-gnu libc6-dev-arm64-cross
 
     - name: Configure Cargo linker
       run: |
@@ -105,7 +113,7 @@ jobs:
         echo '[target.aarch64-unknown-linux-gnu]' >> .cargo/config.toml
         echo 'linker = "aarch64-linux-gnu-gcc"' >> .cargo/config.toml
         echo '[target.i686-unknown-linux-gnu]' >> .cargo/config.toml
-        echo 'linker = "gcc"' >> .cargo/config.toml 
+        echo 'linker = "gcc"' >> .cargo/config.toml
 
     - name: Add targets
       run: |
