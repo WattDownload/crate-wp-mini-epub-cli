@@ -5,14 +5,20 @@ use anyhow::Context;
 use anyhow::Result;
 use clap::Parser;
 use reqwest::Client;
+use tracing_subscriber::EnvFilter;
 use tracing::{info, info_span, instrument, Level};
 use wp_mini_epub::{download_and_save_story, login, logout};
 
 // --- Application Entry Point ---
 #[tokio::main]
 async fn main() -> Result<()> {
-    // 1. Initialize the tracing subscriber. This captures logs and prints them.
-    tracing_subscriber::fmt().with_max_level(Level::INFO).init();
+    // 1. Initialize the tracing subscriber with EnvFilter.
+    // This will default to showing INFO logs for your crate (`wp_epub_cli`)
+    // and WARN for all other crates.
+    let filter = EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| EnvFilter::new("wp_epub_cli=info,warn"));
+
+    tracing_subscriber::fmt().with_env_filter(filter).init();
 
     // 2. Create the reqwest client ONCE and pass it down. No more globals!
     let http_client = Client::builder()
