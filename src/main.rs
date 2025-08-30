@@ -62,20 +62,20 @@ async fn handle_do_command(client: &Client, args: DoArgs) -> Result<()> {
     )
     .await?;
 
-    info!("✅ Story processing completed successfully!");
+    info!("Story processing completed successfully!");
     Ok(())
 }
 
 async fn handle_login_command(client: &Client, args: LoginArgs) -> Result<()> {
     info!(username = %args.username, "Handling 'login' command");
     login(client, &args.username, &args.password).await?;
-    info!("✅ Login successful!");
+    info!("Login successful!");
     Ok(())
 }
 
 async fn handle_logout_command(client: &Client) -> Result<()> {
     info!("Handling 'logout' command");
     logout(client).await?;
-    info!("✅ Logout successful!");
+    info!("Logout successful!");
     Ok(())
 }
