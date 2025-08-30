@@ -1,0 +1,150 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "*.*.*" # Runs only when a tag like 1.0.0 is pushed
+
+permissions:
+  contents: write # Needed to create the release
+
+env:
+  # Set your binary name here to avoid repeating it
+  BINARY_NAME: wp-epub-cli
+
+jobs:
+  # =================================================================
+  # ==               Build Binaries for macOS                      ==
+  # =================================================================
+  build-mac:
+    runs-on: macos-15
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Add Intel target
+      run: rustup target add x86_64-apple-darwin
+
+    - name: Build for Apple Silicon (ARM64)
+      run: cargo build --release --target aarch64-apple-darwin
+
+    - name: Build for Intel (x86_64)
+      run: cargo build --release --target x86_64-apple-darwin
+
+    - name: Rename binaries
+      run: |
+        mv target/aarch64-apple-darwin/release/$BINARY_NAME ./$BINARY_NAME-macos-aarch64
+        mv target/x86_64-apple-darwin/release/$BINARY_NAME ./$BINARY_NAME-macos-x86_64
+
+    - name: Upload macOS artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-binaries
+        path: |
+          ${{ env.BINARY_NAME }}-macos-aarch64
+          ${{ env.BINARY_NAME }}-macos-x86_64
+
+  # =================================================================
+  # ==               Build Binaries for Windows                    ==
+  # =================================================================
+  build-windows:
+    runs-on: windows-2025
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Add targets
+      run: |
+        rustup target add i686-pc-windows-msvc
+        rustup target add aarch64-pc-windows-msvc
+
+    - name: Build for 64-bit Windows (x86_64)
+      run: cargo build --release --target x86_64-pc-windows-msvc
+
+    - name: Build for 32-bit Windows (i686)
+      run: cargo build --release --target i686-pc-windows-msvc
+
+    - name: Build for ARM64 Windows (aarch64)
+      run: cargo build --release --target aarch64-pc-windows-msvc
+
+    - name: Rename binaries
+      shell: pwsh
+      run: |
+        Move-Item -Path "target\x86_64-pc-windows-msvc\release\${{ env.BINARY_NAME }}.exe" -Destination "${{ env.BINARY_NAME }}-windows-x86_64.exe"
+        Move-Item -Path "target\i686-pc-windows-msvc\release\${{ env.BINARY_NAME }}.exe" -Destination "${{ env.BINARY_NAME }}-windows-i686.exe"
+        Move-Item -Path "target\aarch64-pc-windows-msvc\release\${{ env.BINARY_NAME }}.exe" -Destination "${{ env.BINARY_NAME }}-windows-aarch64.exe"
+
+    - name: Upload Windows artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-binaries
+        path: |
+          ${{ env.BINARY_NAME }}-windows-x86_64.exe
+          ${{ env.BINARY_NAME }}-windows-i686.exe
+          ${{ env.BINARY_NAME }}-windows-aarch64.exe
+
+  # =================================================================
+  # ==               Build Binaries for Linux                      ==
+  # =================================================================
+  build-linux:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install cross-compilation toolchains
+      run: sudo apt-get update && sudo apt-get install -y gcc-multilib gcc-aarch64-linux-gnu libc6-dev-arm64-cross
+
+    - name: Configure Cargo linker
+      run: |
+        mkdir -p .cargo
+        echo '[target.aarch64-unknown-linux-gnu]' >> .cargo/config.toml
+        echo 'linker = "aarch64-linux-gnu-gcc"' >> .cargo/config.toml
+        echo '[target.i686-unknown-linux-gnu]' >> .cargo/config.toml
+        echo 'linker = "gcc"' >> .cargo/config.toml
+    
+    - name: Add targets
+      run: |
+        rustup target add i686-unknown-linux-gnu
+        rustup target add aarch64-unknown-linux-gnu
+
+    - name: Build for 64-bit Linux (x86_64)
+      run: cargo build --release --target x86_64-unknown-linux-gnu
+
+    - name: Build for 32-bit Linux (i686)
+      run: cargo build --release --target i686-unknown-linux-gnu
+
+    - name: Build for ARM64 Linux (aarch64)
+      run: cargo build --release --target aarch64-unknown-linux-gnu
+
+    - name: Rename binaries
+      run: |
+        mv target/x86_64-unknown-linux-gnu/release/$BINARY_NAME ./$BINARY_NAME-linux-x86_64
+        mv target/i686-unknown-linux-gnu/release/$BINARY_NAME ./$BINARY_NAME-linux-i686
+        mv target/aarch64-unknown-linux-gnu/release/$BINARY_NAME ./$BINARY_NAME-linux-aarch64
+    
+    - name: Upload Linux artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-binaries
+        path: |
+          ${{ env.BINARY_NAME }}-linux-x86_64
+          ${{ env.BINARY_NAME }}-linux-i686
+          ${{ env.BINARY_NAME }}-linux-aarch64
+
+  # =================================================================
+  # ==     Create Release and Upload All Binaries                  ==
+  # =================================================================
+  create-release:
+    runs-on: ubuntu-latest
+    # This job depends on the successful completion of all build jobs
+    needs: [build-mac, build-windows, build-linux]
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        # The destination directory for all downloaded files
+        path: release-assets
+        
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        # The `files` property supports glob patterns to upload all binaries
+        files: release-assets/**/*
