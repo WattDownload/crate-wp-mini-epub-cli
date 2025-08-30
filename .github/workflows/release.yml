@@ -89,31 +89,31 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Configure APT for cross-compilation
-      run: |
-        # Make the system aware of the arm64 architecture
-        sudo dpkg --add-architecture arm64
+    # - name: Configure APT for cross-compilation
+    #   run: |
+    #     # Make the system aware of the arm64 architecture
+    #     sudo dpkg --add-architecture arm64
         
-        # Overwrite the sources.list to use the main archive for all components.
-        # This avoids 404 errors from mirrors that don't host foreign architectures.
-        echo "deb [arch=amd64,arm64] http://azure.archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse" | sudo tee /etc/apt/sources.list
-        echo "deb [arch=amd64,arm64] http://azure.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-        echo "deb [arch=amd64,arm64] http://azure.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-        echo "deb [arch=amd64,arm64] http://azure.archive.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+    #     # Overwrite the sources.list to use the main archive for all components.
+    #     # This avoids 404 errors from mirrors that don't host foreign architectures.
+    #     echo "deb [arch=amd64,arm64] http://azure.archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse" | sudo tee /etc/apt/sources.list
+    #     echo "deb [arch=amd64,arm64] http://azure.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+    #     echo "deb [arch=amd64,arm64] http://azure.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+    #     echo "deb [arch=amd64,arm64] http://azure.archive.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
         
-        # Update package lists from the new, reliable source
-        sudo apt-get update
+    #     # Update package lists from the new, reliable source
+    #     sudo apt-get update
         
-        # Install the required packages
-        sudo apt-get install -y --no-install-recommends gcc-multilib gcc-aarch64-linux-gnu libc6-dev-arm64-cross
+    #     # Install the required packages
+    #     sudo apt-get install -y --no-install-recommends gcc-multilib gcc-aarch64-linux-gnu libc6-dev-arm64-cross
 
-    - name: Configure Cargo linker
-      run: |
-        mkdir -p .cargo
-        echo '[target.aarch64-unknown-linux-gnu]' >> .cargo/config.toml
-        echo 'linker = "aarch64-linux-gnu-gcc"' >> .cargo/config.toml
-        echo '[target.i686-unknown-linux-gnu]' >> .cargo/config.toml
-        echo 'linker = "gcc"' >> .cargo/config.toml
+    # - name: Configure Cargo linker
+    #   run: |
+    #     mkdir -p .cargo
+    #     echo '[target.aarch64-unknown-linux-gnu]' >> .cargo/config.toml
+    #     echo 'linker = "aarch64-linux-gnu-gcc"' >> .cargo/config.toml
+    #     echo '[target.i686-unknown-linux-gnu]' >> .cargo/config.toml
+    #     echo 'linker = "gcc"' >> .cargo/config.toml
 
     - name: Add targets
       run: |
@@ -123,17 +123,17 @@ jobs:
     - name: Build for 64-bit Linux (x86_64)
       run: cargo build --release --target x86_64-unknown-linux-gnu
 
-    - name: Build for 32-bit Linux (i686)
-      run: cargo build --release --target i686-unknown-linux-gnu
+    # - name: Build for 32-bit Linux (i686)
+      # run: cargo build --release --target i686-unknown-linux-gnu
 
-    - name: Build for ARM64 Linux (aarch64)
-      run: cargo build --release --target aarch64-unknown-linux-gnu
+    # - name: Build for ARM64 Linux (aarch64)
+      # run: cargo build --release --target aarch64-unknown-linux-gnu
 
     - name: Rename binaries
       run: |
         mv target/x86_64-unknown-linux-gnu/release/$BINARY_NAME ./$BINARY_NAME-linux-x86_64
-        mv target/i686-unknown-linux-gnu/release/$BINARY_NAME ./$BINARY_NAME-linux-i686
-        mv target/aarch64-unknown-linux-gnu/release/$BINARY_NAME ./$BINARY_NAME-linux-aarch64
+        # mv target/i686-unknown-linux-gnu/release/$BINARY_NAME ./$BINARY_NAME-linux-i686
+        # mv target/aarch64-unknown-linux-gnu/release/$BINARY_NAME ./$BINARY_NAME-linux-aarch64
     
     - name: Upload Linux artifacts
       uses: actions/upload-artifact@v4
@@ -141,8 +141,8 @@ jobs:
         name: linux-binaries
         path: |
           ${{ env.BINARY_NAME }}-linux-x86_64
-          ${{ env.BINARY_NAME }}-linux-i686
-          ${{ env.BINARY_NAME }}-linux-aarch64
+          # ${{ env.BINARY_NAME }}-linux-i686
+          # ${{ env.BINARY_NAME }}-linux-aarch64
 
   # =================================================================
   # ==     Create Release and Upload All Binaries                  ==
