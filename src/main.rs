@@ -6,8 +6,8 @@ use anyhow::Result;
 use clap::Parser;
 use reqwest::Client;
 use tracing_subscriber::EnvFilter;
-use tracing::{info, info_span, instrument, Level};
-use wp_mini_epub::{download_and_save_story, login, logout};
+use tracing::{info, Level};
+use wp_mini_epub::{download_story_to_file, login, logout};
 
 // --- Application Entry Point ---
 #[tokio::main]
@@ -53,7 +53,7 @@ async fn handle_do_command(client: &Client, args: DoArgs) -> Result<()> {
         .output_path
         .unwrap_or_else(|| std::env::current_dir().expect("Failed to get current directory"));
 
-    download_and_save_story(
+    download_story_to_file(
         client,
         args.id,
         args.include_images,
