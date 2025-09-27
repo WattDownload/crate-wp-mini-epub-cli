@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
     // 2. Create the reqwest client ONCE and pass it down. No more globals!
     let http_client = Client::builder()
         .cookie_store(true)
-        .user_agent("Your User Agent Here")
+        .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
         .build()?;
 
     // 3. Parse CLI arguments
