@@ -1,165 +1,169 @@
+# This workflow is inspired by the excellent release process of ripgrep.
+# It creates a draft release, builds binaries for multiple targets in parallel,
+# and then uploads them to the draft release.
+
 name: Release
 
+# Trigger the workflow on pushes to tags that look like a version number.
 on:
   push:
     tags:
-      - "*.*.*" # Runs only when a tag like 1.0.0 is pushed
+      - "[0-9]+.[0-9]+.[0-9]+"
 
+# This permission is needed for the `gh release` commands.
 permissions:
-  contents: write # Needed to create the release
+  contents: write
 
+# Set the binary name for easy reuse.
 env:
-  # Set your binary name here to avoid repeating it
-  BINARY_NAME: wp-epub-cli
+  BINARY_NAME: wp-mini-epub-cli
 
 jobs:
   # =================================================================
-  # ==               Build Binaries for macOS                      ==
+  # == 1. Create a draft GitHub Release                            ==
   # =================================================================
-  build-mac:
-    runs-on: macos-15
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Add Intel target
-      run: rustup target add x86_64-apple-darwin
-
-    - name: Build for Apple Silicon (ARM64)
-      run: cargo build --release --target aarch64-apple-darwin
-
-    - name: Build for Intel (x86_64)
-      run: cargo build --release --target x86_64-apple-darwin
-
-    - name: Rename binaries
-      run: |
-        mv target/aarch64-apple-darwin/release/$BINARY_NAME ./$BINARY_NAME-macos-aarch64
-        mv target/x86_64-apple-darwin/release/$BINARY_NAME ./$BINARY_NAME-macos-x86_64
-
-    - name: Upload macOS artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: macos-binaries
-        path: |
-          ${{ env.BINARY_NAME }}-macos-aarch64
-          ${{ env.BINARY_NAME }}-macos-x86_64
-
-  # =================================================================
-  # ==               Build Binaries for Windows                    ==
-  # =================================================================
-  build-windows:
-    runs-on: windows-2025
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Add targets
-      run: |
-        rustup target add i686-pc-windows-msvc
-        rustup target add aarch64-pc-windows-msvc
-
-    - name: Build for 64-bit Windows (x86_64)
-      run: cargo build --release --target x86_64-pc-windows-msvc
-
-    - name: Build for 32-bit Windows (i686)
-      run: cargo build --release --target i686-pc-windows-msvc
-
-    - name: Build for ARM64 Windows (aarch64)
-      run: cargo build --release --target aarch64-pc-windows-msvc
-
-    - name: Rename binaries
-      shell: pwsh
-      run: |
-        Move-Item -Path "target\x86_64-pc-windows-msvc\release\${{ env.BINARY_NAME }}.exe" -Destination "${{ env.BINARY_NAME }}-windows-x86_64.exe"
-        Move-Item -Path "target\i686-pc-windows-msvc\release\${{ env.BINARY_NAME }}.exe" -Destination "${{ env.BINARY_NAME }}-windows-i686.exe"
-        Move-Item -Path "target\aarch64-pc-windows-msvc\release\${{ env.BINARY_NAME }}.exe" -Destination "${{ env.BINARY_NAME }}-windows-aarch64.exe"
-
-    - name: Upload Windows artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: windows-binaries
-        path: |
-          ${{ env.BINARY_NAME }}-windows-x86_64.exe
-          ${{ env.BINARY_NAME }}-windows-i686.exe
-          ${{ env.BINARY_NAME }}-windows-aarch64.exe
-
-  # =================================================================
-  # ==               Build Binaries for Linux                      ==
-  # =================================================================
-  build-linux:
-    runs-on: ubuntu-24.04
-    steps:
-    - uses: actions/checkout@v4
-
-    # - name: Configure APT for cross-compilation
-    #   run: |
-    #     # Make the system aware of the arm64 architecture
-    #     sudo dpkg --add-architecture arm64
-        
-    #     # Overwrite the sources.list to use the main archive for all components.
-    #     # This avoids 404 errors from mirrors that don't host foreign architectures.
-    #     echo "deb [arch=amd64,arm64] http://azure.archive.ubuntu.com/ubuntu/ noble main restricted universe multiverse" | sudo tee /etc/apt/sources.list
-    #     echo "deb [arch=amd64,arm64] http://azure.archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-    #     echo "deb [arch=amd64,arm64] http://azure.archive.ubuntu.com/ubuntu/ noble-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-    #     echo "deb [arch=amd64,arm64] http://azure.archive.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-        
-    #     # Update package lists from the new, reliable source
-    #     sudo apt-get update
-        
-    #     # Install the required packages
-    #     sudo apt-get install -y --no-install-recommends gcc-multilib gcc-aarch64-linux-gnu libc6-dev-arm64-cross
-
-    # - name: Configure Cargo linker
-    #   run: |
-    #     mkdir -p .cargo
-    #     echo '[target.aarch64-unknown-linux-gnu]' >> .cargo/config.toml
-    #     echo 'linker = "aarch64-linux-gnu-gcc"' >> .cargo/config.toml
-    #     echo '[target.i686-unknown-linux-gnu]' >> .cargo/config.toml
-    #     echo 'linker = "gcc"' >> .cargo/config.toml
-
-    - name: Add targets
-      run: |
-        rustup target add i686-unknown-linux-gnu
-        rustup target add aarch64-unknown-linux-gnu
-
-    - name: Build for 64-bit Linux (x86_64)
-      run: cargo build --release --target x86_64-unknown-linux-gnu
-
-    # - name: Build for 32-bit Linux (i686)
-      # run: cargo build --release --target i686-unknown-linux-gnu
-
-    # - name: Build for ARM64 Linux (aarch64)
-      # run: cargo build --release --target aarch64-unknown-linux-gnu
-
-    - name: Rename binaries
-      run: |
-        mv target/x86_64-unknown-linux-gnu/release/$BINARY_NAME ./$BINARY_NAME-linux-x86_64
-        # mv target/i686-unknown-linux-gnu/release/$BINARY_NAME ./$BINARY_NAME-linux-i686
-        # mv target/aarch64-unknown-linux-gnu/release/$BINARY_NAME ./$BINARY_NAME-linux-aarch64
-    
-    - name: Upload Linux artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: linux-binaries
-        path: |
-          ${{ env.BINARY_NAME }}-linux-x86_64
-          # ${{ env.BINARY_NAME }}-linux-i686
-          # ${{ env.BINARY_NAME }}-linux-aarch64
-
-  # =================================================================
-  # ==     Create Release and Upload All Binaries                  ==
-  # =================================================================
+  # This job creates a single draft release. It also validates that the
+  # git tag matches the version in Cargo.toml.
   create-release:
+    name: create-release
     runs-on: ubuntu-latest
-    # This job depends on the successful completion of all build jobs
-    needs: [build-mac, build-windows, build-linux]
+    outputs:
+      # Pass the determined version to other jobs.
+      version: ${{ env.VERSION }}
     steps:
-    - name: Download all artifacts
-      uses: actions/download-artifact@v4
-      with:
-        # The destination directory for all downloaded files
-        path: release-assets
-        
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v2
-      with:
-        # The `files` property supports glob patterns to upload all binaries
-        files: release-assets/**/*
+      - uses: actions/checkout@v4
+
+      - name: Get the release version from the tag
+        run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Check that tag version and Cargo.toml version are the same
+        shell: bash
+        run: |
+          # Fails if the version in Cargo.toml is not "version = "x.y.z""
+          if ! grep -q "version = \"$VERSION\"" Cargo.toml; then
+            echo "Error: The git tag '$VERSION' does not match the version in Cargo.toml." >&2
+            exit 1
+          fi
+          echo "Validated that git tag and Cargo.toml version are both $VERSION."
+
+      - name: Create GitHub Release
+        env:
+          # The GITHUB_TOKEN is automatically provided by GitHub Actions.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          gh release create ${{ env.VERSION }}
+          --draft
+          --verify-tag
+          --title "v${{ env.VERSION }}"
+
+  # =================================================================
+  # == 2. Build binaries for each target and upload to the release ==
+  # =================================================================
+  build-release:
+    name: build-release
+    # This job must wait for the release to be created first.
+    needs: ['create-release']
+    # Use a matrix to build for multiple targets in parallel.
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux (x86_64, musl for high compatibility)
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            archive_ext: .tar.gz
+          # Linux (x86_64, gnu for broader library support)
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive_ext: .tar.gz
+          # Linux (ARM64, gnu)
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            archive_ext: .tar.gz
+          # Linux (i686, 32-bit, gnu)
+          - os: ubuntu-latest
+            target: i686-unknown-linux-gnu
+            archive_ext: .tar.gz
+          # macOS (Apple Silicon)
+          - os: macos-14 # Apple Silicon Runner
+            target: aarch64-apple-darwin
+            archive_ext: .tar.gz
+          # macOS (Intel)
+          - os: macos-latest # Intel Runner
+            target: x86_64-apple-darwin
+            archive_ext: .tar.gz
+          # Windows (x86_64)
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive_ext: .zip
+          # Windows (ARM64)
+          - os: windows-latest
+            target: aarch64-pc-windows-msvc
+            archive_ext: .zip
+          # Windows (i686, 32-bit)
+          - os: windows-latest
+            target: i686-pc-windows-msvc
+            archive_ext: .zip
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install cross-compilation tools (Linux)
+        if: runner.os == 'Linux' && matrix.target != 'x86_64-unknown-linux-musl'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu gcc-multilib
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          target: ${{ matrix.target }}
+
+      - name: Build release binary
+        run: cargo build --verbose --release --target ${{ matrix.target }}
+
+      - name: Prepare binary for packaging
+        shell: bash
+        run: |
+          # Determine the binary path and name based on the OS.
+          src_dir="target/${{ matrix.target }}/release"
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            mv "$src_dir/${{ env.BINARY_NAME }}.exe" "$src_dir/${{ env.BINARY_NAME }}"
+          fi
+          echo "BINARY_PATH=$src_dir/${{ env.BINARY_NAME }}" >> $GITHUB_ENV
+
+      - name: Prepare archive contents
+        shell: bash
+        run: |
+          # This is where we create the directory that will be archived.
+          # The version is passed from the `create-release` job.
+          version="${{ needs.create-release.outputs.version }}"
+          staging_dir="${{ env.BINARY_NAME }}-$version-${{ matrix.target }}"
+          mkdir -p "$staging_dir"
+
+          # Copy the binary and other important files into the staging directory.
+          cp "${{ env.BINARY_PATH }}" "$staging_dir/"
+          cp README.md LICENSE "$staging_dir/"
+
+          echo "STAGING_DIR=$staging_dir" >> $GITHUB_ENV
+          echo "ARCHIVE_NAME=$staging_dir${{ matrix.archive_ext }}" >> $GITHUB_ENV
+
+      - name: Build archive
+        shell: bash
+        run: |
+          if [[ "${{ matrix.archive_ext }}" == ".zip" ]]; then
+            7z a "${{ env.ARCHIVE_NAME }}" "${{ env.STAGING_DIR }}"
+          else
+            tar czf "${{ env.ARCHIVE_NAME }}" "${{ env.STAGING_DIR }}"
+          fi
+
+      - name: Upload release archive
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          gh release upload
+          "${{ needs.create-release.outputs.version }}"
+          "${{ env.ARCHIVE_NAME }}"
+
