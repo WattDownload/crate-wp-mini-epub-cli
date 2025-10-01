@@ -86,7 +86,7 @@ jobs:
             target: i686-unknown-linux-gnu
             archive_ext: .tar.gz
           # macOS (Apple Silicon)
-          - os: macos-14 # Apple Silicon Runner
+          - os: macos-15 # Apple Silicon Runner
             target: aarch64-apple-darwin
             archive_ext: .tar.gz
           # macOS (Intel)
