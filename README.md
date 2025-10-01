@@ -35,10 +35,21 @@
 - Download stories with or without images embedded.
 - Clean, Extra-Minimal UI.
 
-## Get Started
+## Get Started (No Cargo)
  - Download executable for your OS.
  - Run `./wp-cli -h`
-   
+
+## Get Started (Cargo)
+- ### [Cargo](https://doc.rust-lang.org/cargo/) install
+```bash
+cargo install wp-mini-epub-cli
+```
+
+- ### [Cargo binstall](https://github.com/cargo-bins/cargo-binstall?tab=readme-ov-file)
+```bash
+cargo binstall wp-mini-epub-cli
+```
+
 ---
 
 ## Get Started (Dev)
