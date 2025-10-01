@@ -6,7 +6,7 @@ use anyhow::Result;
 use clap::Parser;
 use reqwest::Client;
 use tracing_subscriber::EnvFilter;
-use tracing::{info, Level};
+use tracing::info;
 use wp_mini_epub::{download_story_to_file, login, logout};
 
 // --- Application Entry Point ---
