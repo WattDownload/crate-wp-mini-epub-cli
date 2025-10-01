@@ -1,9 +1,13 @@
 [package]
-name = "wp-epub-cli"
+name = "wp-mini-epub-cli"
 version = "0.1.4"
 edition = "2024"
 description = "A CLI tool to download Wattpad Storeis into epubs."
 authors = ["WattDownload <contact@wattdownload.dev>"]
+license = "AGPL-3.0-only"
+documentation = "https://docs.rs/wp-mini-epub-cli"
+homepage = "https://wprs.dev/crate-wp-mini-epub-cli"
+repository = "https://github.com/WattDownload/crate-wp-mini-epub-cli"
 
 [dependencies]
 anyhow = "1.0.100"
