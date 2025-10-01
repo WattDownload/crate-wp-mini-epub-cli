@@ -10,14 +10,14 @@ permissions:
 
 env:
   # Your binary name
-  BINARY_NAME: wp-epub-cli
+  BINARY_NAME: wp-mini-epub-cli
 
 jobs:
   # =================================================================
   # ==                     Build Binaries for macOS                  ==
   # =================================================================
   build-mac:
-    runs-on: macos-15 # Using a newer runner, macos-14 is also a good choice
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
 
