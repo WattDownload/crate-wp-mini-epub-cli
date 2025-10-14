@@ -11,9 +11,6 @@
 
 ---
 
-> [!WARNING]
-> PLEASE USE VERSION 1.1.1 FOR NOW [1.1.2 & 1.1.3 IS NOT USABLE]
-
 <div align="center">
   <a href="https://github.com/WattDownload/wp-mini-epub-cli/releases/latest">
     <img src="https://img.shields.io/badge/Download%20now!-darkgreen?style=for-the-badge&logo=abdownloadmanager&logoColor=f5f5f5" alt="Download CLI App">
@@ -35,10 +32,21 @@
 - Download stories with or without images embedded.
 - Clean, Extra-Minimal UI.
 
-## Get Started
+## Get Started (No Cargo)
  - Download executable for your OS.
  - Run `./wp-cli -h`
-   
+
+## Get Started (Cargo)
+- ### [Cargo](https://doc.rust-lang.org/cargo/) install
+```bash
+cargo install wp-mini-epub-cli
+```
+
+- ### [Cargo binstall](https://github.com/cargo-bins/cargo-binstall?tab=readme-ov-file)
+```bash
+cargo binstall wp-mini-epub-cli
+```
+
 ---
 
 ## Get Started (Dev)
