@@ -5,9 +5,9 @@ use anyhow::Context;
 use anyhow::Result;
 use clap::Parser;
 use reqwest::Client;
-use tracing_subscriber::EnvFilter;
 use tracing::info;
-use wp_mini_epub::{download_story_to_file, login, logout};
+use tracing_subscriber::EnvFilter;
+use wp_mini_epub::{download_story_to_file, login, logout, StoryField};
 
 // --- Application Entry Point ---
 #[tokio::main]
@@ -53,16 +53,22 @@ async fn handle_do_command(client: &Client, args: DoArgs) -> Result<()> {
         .output_path
         .unwrap_or_else(|| std::env::current_dir().expect("Failed to get current directory"));
 
-    download_story_to_file(
+    let story_fields = vec![StoryField::Title];
+
+    let story_response = download_story_to_file(
         client,
         args.id,
         args.include_images,
         args.semaphore as usize,
         &output_dir,
+        Some(&story_fields),
     )
     .await?;
 
-    info!("Story processing completed successfully!");
+    let story_title = story_response.metadata.title.unwrap_or("Unknown Title".to_string());
+
+    info!(title = %story_title, "Story processing completed successfully");
+
     Ok(())
 }
 
