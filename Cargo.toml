@@ -13,8 +13,8 @@ repository = "https://github.com/WattDownload/crate-wp-mini-epub-cli"
 anyhow = "1.0.100"
 clap = { version = "4.5.49", features = ["derive"] }
 thiserror = "2.0.17"
-tokio = { version = "1.47.1", features = ["full"] }
+tokio = { version = "1.48.0", features = ["full"] }
 tracing = { version = "0.1.41", features = ["async-await"] }
 tracing-subscriber = { version = "0.3.20", features = ["env-filter", "fmt"] }
 reqwest = "0.12.24"
-wp-mini-epub = "0.7.0"
+wp-mini-epub = "0.7.3"
