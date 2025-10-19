@@ -7,7 +7,7 @@ use clap::Parser;
 use reqwest::Client;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
-use wp_mini_epub::{download_story_to_file, login, logout, StoryField};
+use wp_mini_epub::{download_story_to_folder, login, logout, StoryField};
 
 // --- Application Entry Point ---
 #[tokio::main]
@@ -55,7 +55,7 @@ async fn handle_do_command(client: &Client, args: DoArgs) -> Result<()> {
 
     let story_fields = vec![StoryField::Title];
 
-    let story_response = download_story_to_file(
+    let story_response = download_story_to_folder(
         client,
         args.id,
         args.include_images,
