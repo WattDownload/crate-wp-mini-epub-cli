@@ -1,6 +1,6 @@
 [package]
 name = "wp-mini-epub-cli"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2024"
 description = "A CLI tool to download WP Storeis into epubs."
 authors = ["WattDownload <contact@wattdownload.com>"]
@@ -17,4 +17,4 @@ tokio = { version = "1.48.0", features = ["full"] }
 tracing = { version = "0.1.41", features = ["async-await"] }
 tracing-subscriber = { version = "0.3.20", features = ["env-filter", "fmt"] }
 reqwest = "0.12.24"
-wp-mini-epub = "0.7.4"
+wp-mini-epub = "0.8.1"
