@@ -61,6 +61,7 @@ jobs:
           rustup target add aarch64-pc-windows-msvc
 
       - name: Build for all targets
+        shell: bash
         run: |
           cargo build --release --target x86_64-pc-windows-msvc
           cargo build --release --target i686-pc-windows-msvc
