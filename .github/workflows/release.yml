@@ -17,9 +17,9 @@ jobs:
   # ==                     Build Binaries for macOS                  ==
   # =================================================================
   build-mac:
-    runs-on: macos-15
+    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Add Intel target
         run: rustup target add x86_64-apple-darwin
@@ -40,7 +40,7 @@ jobs:
           tar -czvf ${{ env.BINARY_NAME }}-v${VERSION}-x86_64-apple-darwin.tar.gz -C target/x86_64-apple-darwin/release ${{ env.BINARY_NAME }}
 
       - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macos-binaries
           path: |
@@ -51,9 +51,9 @@ jobs:
   # ==                    Build Binaries for Windows                 ==
   # =================================================================
   build-windows:
-    runs-on: windows-2022 # Using a stable runner, 2025 is in preview
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Add targets
         run: |
@@ -79,7 +79,7 @@ jobs:
           Compress-Archive -Path "target\aarch64-pc-windows-msvc\release\${{ env.BINARY_NAME }}.exe" -DestinationPath "${{ env.BINARY_NAME }}-v${VERSION}-aarch64-pc-windows-msvc.zip"
 
       - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-binaries
           path: |
@@ -91,9 +91,9 @@ jobs:
   # ==                     Build Binaries for Linux                  ==
   # =================================================================
   build-linux:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       
       # NOTE: For cross-compiling i686 and aarch64 on an x86_64 runner,
       # you still need to install the appropriate linkers. For simplicity,
@@ -130,7 +130,7 @@ jobs:
           # tar -czvf ${{ env.BINARY_NAME }}-v${VERSION}-aarch64-unknown-linux-gnu.tar.gz -C target/aarch64-unknown-linux-gnu/release ${{ env.BINARY_NAME }}
 
       - name: Upload Linux artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-binaries
           path: |
@@ -146,13 +146,13 @@ jobs:
     needs: [build-mac, build-windows, build-linux]
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           # The destination directory for all downloaded files
           path: release-assets
           
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           # The `files` property supports glob patterns to upload all binaries
           files: release-assets/**/*
